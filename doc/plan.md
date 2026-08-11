@@ -5,7 +5,8 @@
 1. db
 
    - postgresql 최신버전 포트 5438
-   - db명은 stockbs, 아이디/패스워드 admin/passw0rd!
+   - db명은 stockbs, 아이디/패스워드 admin/YOUR_DB_PASSWORD
+
 2. backend 포트는 8099
 
    * 테이블 하나 만들어서 채널명 : 매일경제TV, 식별자 : `mkeconomy_tv`, 핸들 :MKeconomy_TV , 방송 url : [www.youtube.com/@MKeconomy_TV/live](https://www.youtube.com/@MKeconomy_TV/live) , 수집상태 : on/off

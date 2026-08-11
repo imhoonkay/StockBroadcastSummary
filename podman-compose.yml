@@ -10,7 +10,8 @@ services:
     ports:
       - "8099:8099"
     environment:
-      - DATABASE_URL=postgresql://admin:passw0rd!@db:5432/stockbs
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
+
       - GEMINI_API_KEY=${GEMINI_API_KEY:-YOUR_GEMINI_API_KEY}
 
       - SUBTITLE_DIR=/app/storage/subtitles

@@ -19,7 +19,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(req: LoginRequest):
-    if req.username == "admin" and req.password == "passw0rd!":
+    admin_user = os.getenv("ADMIN_USERNAME", "admin")
+    admin_pass = os.getenv("ADMIN_PASSWORD", "YOUR_ADMIN_PASSWORD")
+    if req.username == admin_user and req.password == admin_pass:
+
         access_token = create_access_token(data={"sub": req.username})
         return TokenResponse(access_token=access_token, username=req.username)
     

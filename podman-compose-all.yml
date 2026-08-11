@@ -8,7 +8,8 @@ services:
     environment:
       POSTGRES_DB: stockbs
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: passw0rd!
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-YOUR_DB_PASSWORD}
+
       TZ: Asia/Seoul
     ports:
       - "5438:5432"
@@ -29,7 +30,8 @@ services:
     ports:
       - "8099:8099"
     environment:
-      - DATABASE_URL=postgresql://admin:passw0rd!@db:5432/stockbs
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
+
       - GEMINI_API_KEY=${GEMINI_API_KEY:-YOUR_GEMINI_API_KEY}
 
       - SUBTITLE_DIR=/app/storage/subtitles
@@ -48,7 +50,8 @@ services:
     command: python -m app.services.collector_daemon
     restart: always
     environment:
-      - DATABASE_URL=postgresql://admin:passw0rd!@db:5432/stockbs
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
+
       - SUBTITLE_DIR=/app/storage/subtitles
       - TZ=Asia/Seoul
     volumes:
@@ -65,7 +68,8 @@ services:
     command: python -m app.services.summarizer_daemon
     restart: always
     environment:
-      - DATABASE_URL=postgresql://admin:passw0rd!@db:5432/stockbs
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
+
       - GEMINI_API_KEY=${GEMINI_API_KEY:-YOUR_GEMINI_API_KEY}
 
       - SUBTITLE_DIR=/app/storage/subtitles
@@ -97,7 +101,8 @@ services:
     command: python -m app.services.kospi200_daemon
     restart: always
     environment:
-      - DATABASE_URL=postgresql://admin:passw0rd!@db:5432/stockbs
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
+
       - TZ=Asia/Seoul
     depends_on:
       db:
