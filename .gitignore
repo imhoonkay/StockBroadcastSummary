@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+
+# Temporary data & storage
+*.wav
+*.mp3
+*.mp4
+/tmp/
+/data/
+data/
+storage/subtitles/*.txt
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Environment / Keys
+.env
+*.pem

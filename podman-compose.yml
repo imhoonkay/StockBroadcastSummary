@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stockbs_backend
+    restart: always
+    ports:
+      - "8099:8099"
+    environment:
+      - DATABASE_URL=postgresql://admin:passw0rd!@db:5432/stockbs
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-YOUR_GEMINI_API_KEY}
+
+      - SUBTITLE_DIR=/app/storage/subtitles
+      - TZ=Asia/Seoul
+    volumes:
+      - stockbroadcastsummary_subtitle_storage:/app/storage/subtitles
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: stockbs_frontend
+    restart: always
+    ports:
+      - "8090:80"
+    environment:
+      - TZ=Asia/Seoul
+    depends_on:
+      - backend
+
+networks:
+  default:
+    name: stockbroadcastsummary_default
+    external: true
+
+volumes:
+  stockbroadcastsummary_subtitle_storage:
+    external: true
