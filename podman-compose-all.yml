@@ -6,20 +6,14 @@ services:
     container_name: stockbs_db
     restart: always
     environment:
-      POSTGRES_DB: stockbs
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-YOUR_DB_PASSWORD}
-
+      POSTGRES_DB: ${POSTGRES_DB:-stockbs}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-passw0rd!}
       TZ: Asia/Seoul
     ports:
       - "5438:5432"
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d stockbs"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - postgres_data:/var/lib/postgresql/data
 
   backend:
     build:
@@ -30,17 +24,14 @@ services:
     ports:
       - "8099:8099"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
-
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-YOUR_GEMINI_API_KEY}
-
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:passw0rd!@db:5432/stockbs}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SUBTITLE_DIR=/app/storage/subtitles
       - TZ=Asia/Seoul
     volumes:
       - subtitle_storage:/app/storage/subtitles
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   collector:
     build:
@@ -50,15 +41,13 @@ services:
     command: python -m app.services.collector_daemon
     restart: always
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
-
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:passw0rd!@db:5432/stockbs}
       - SUBTITLE_DIR=/app/storage/subtitles
       - TZ=Asia/Seoul
     volumes:
       - subtitle_storage:/app/storage/subtitles
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   summarizer:
     build:
@@ -68,17 +57,14 @@ services:
     command: python -m app.services.summarizer_daemon
     restart: always
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
-
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-YOUR_GEMINI_API_KEY}
-
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:passw0rd!@db:5432/stockbs}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SUBTITLE_DIR=/app/storage/subtitles
       - TZ=Asia/Seoul
     volumes:
       - subtitle_storage:/app/storage/subtitles
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   frontend:
     build:
@@ -101,13 +87,14 @@ services:
     command: python -m app.services.kospi200_daemon
     restart: always
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:YOUR_DB_PASSWORD@db:5432/stockbs}
-
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:passw0rd!@db:5432/stockbs}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - TZ=Asia/Seoul
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
 volumes:
+  postgres_data:
   subtitle_storage:
+
 
