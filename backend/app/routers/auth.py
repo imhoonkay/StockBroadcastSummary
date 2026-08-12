@@ -33,41 +33,54 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
+import logging
+logger = logging.getLogger("auth")
+
 @router.post("/login", response_model=TokenResponse)
 async def login(req: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(AdminUser).filter(AdminUser.username == req.username).first()
+    try:
+        user = db.query(AdminUser).filter(AdminUser.username == req.username).first()
 
-    # Seed default admin user on first run if database has no admin user
-    if not user and req.username == os.getenv("ADMIN_USERNAME", "admin"):
-        default_pass = os.getenv("ADMIN_PASSWORD", "passw0rd!")
-        hashed = get_password_hash(default_pass)
-        user = AdminUser(
-            username=req.username,
-            hashed_password=hashed,
-            name="관리자",
-            is_active=True
-        )
-        db.add(user)
+        # Seed default admin user on first run if database has no admin user
+        if not user and req.username == os.getenv("ADMIN_USERNAME", "admin"):
+            default_pass = os.getenv("ADMIN_PASSWORD", "passw0rd!")
+            hashed = get_password_hash(default_pass)
+            user = AdminUser(
+                username=req.username,
+                hashed_password=hashed,
+                name="관리자",
+                is_active=True
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="아이디 또는 비밀번호가 올바르지 않습니다.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        if not verify_password(req.password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="아이디 또는 비밀번호가 올바르지 않습니다.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user.last_login_at = get_kst_now()
         db.commit()
-        db.refresh(user)
 
-    if not user or not user.is_active:
+        access_token = create_access_token(data={"sub": user.username})
+        return TokenResponse(access_token=access_token, username=user.username)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="아이디 또는 비밀번호가 올바르지 않습니다.",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"로그인 처리 중 오류가 발생했습니다: {str(e)}"
         )
 
-    if not verify_password(req.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="아이디 또는 비밀번호가 올바르지 않습니다.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    user.last_login_at = get_kst_now()
-    db.commit()
-
-    access_token = create_access_token(data={"sub": user.username})
-    return TokenResponse(access_token=access_token, username=user.username)
 
