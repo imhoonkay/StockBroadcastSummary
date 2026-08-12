@@ -8,8 +8,20 @@ KST = timezone(timedelta(hours=9))
 def get_kst_now():
     return datetime.now(KST).replace(tzinfo=None)
 
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    name = Column(String(100), nullable=True, default="관리자")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=get_kst_now)
+    last_login_at = Column(DateTime, nullable=True)
+
 class Channel(Base):
     __tablename__ = "channels"
+
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False) # e.g. 매일경제TV, 서울경제TV, 한국경제TV
